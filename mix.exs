@@ -19,8 +19,7 @@ defmodule EdgedbEcto.MixProject do
 
   defp deps do
     [
-      # we need support for passing maps which is not released yet
-      {:edgedb, git: "https://github.com/nsidnev/edgedb-elixir"},
+      {:edgedb, "~> 0.3.0"},
       {:ecto, "~> 3.7"}
     ]
   end
