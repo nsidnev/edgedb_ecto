@@ -19,7 +19,7 @@ defmodule EdgedbEcto.MixProject do
 
   defp deps do
     [
-      {:edgedb, "~> 0.3.0"},
+      {:edgedb, ">= 0.3.0"},
       {:ecto, "~> 3.7"}
     ]
   end
