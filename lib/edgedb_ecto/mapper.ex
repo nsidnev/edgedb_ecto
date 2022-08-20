@@ -48,21 +48,23 @@ defmodule EdgeDBEcto.Mapper do
           schema_associations = schema_mod.__schema__(:associations)
 
           Enum.reduce_while(schema_associations, {:ok, %{}}, fn link_name, {:ok, associations} ->
-            link = object[link_name]
-            association_meta = schema_mod.__schema__(:association, link_name)
+            case Access.fetch(object, link_name) do
+              {:ok, link} ->
+                association_meta = schema_mod.__schema__(:association, link_name)
 
-            case EdgeDBEcto.Convertable.convert(association_meta.related, link) do
-              {:ok, nil} ->
+                case EdgeDBEcto.Convertable.convert(association_meta.related, link) do
+                  {:ok, []} when association_meta.cardinality == :one ->
+                    {:cont, {:ok, Map.put(associations, link_name, nil)}}
+
+                  {:ok, association} ->
+                    {:cont, {:ok, Map.put(associations, link_name, association)}}
+
+                  {:error, _reason} = error ->
+                    {:halt, error}
+                end
+
+              :error ->
                 {:cont, {:ok, associations}}
-
-              {:ok, []} ->
-                {:cont, {:ok, associations}}
-
-              {:ok, association} ->
-                {:cont, {:ok, Map.put(associations, link_name, association)}}
-
-              {:error, _reason} = error ->
-                {:halt, error}
             end
           end)
         end
