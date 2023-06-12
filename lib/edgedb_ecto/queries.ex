@@ -3,12 +3,18 @@ defmodule EdgeDBEcto.Queries do
 
   defmacro __using__(opts \\ []) do
     {opts, _bindings} = Code.eval_quoted(opts, [], __CALLER__)
-    otp_app = Keyword.fetch!(opts, :otp_app)
     edgedb_name = Keyword.fetch!(opts, :name)
     root_name = Keyword.get(opts, :root, edgedb_name)
 
-    priv_dir = :code.priv_dir(otp_app)
-    edgeql_queries_dir = Path.join(priv_dir, "edgeql")
+    edgeql_queries_dir =
+      if path = opts[:queries_path] do
+        path
+      else
+        otp_app = Keyword.fetch!(opts, :otp_app)
+        priv_dir = :code.priv_dir(otp_app)
+        Path.join(priv_dir, "edgeql")
+      end  
+
     mix_recompilation_hook = define_mix_recompilation_hook(edgeql_queries_dir)
 
     quote location: :keep do
